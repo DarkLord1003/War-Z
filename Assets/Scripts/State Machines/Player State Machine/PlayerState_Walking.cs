@@ -2,56 +2,65 @@ using UnityEngine;
 
 public class PlayerState_Walking : PlayerBaseState
 {
-    private float _xVelocity;
-    private float _yVelocity;
-
     public override StateType GetStateType()
     {
         return StateType.Walking;
     }
 
-
     public override void EnterState()
     {
-        Debug.Log("STATE - WALKING");
-
-        if (Animator == null)
+        if (_playerStateMachine == null)
             return;
 
-        Animator.SetBool(IsWalkingHash, true);
-        Animator.SetBool(IsSprintingHash, false);
-        Animator.SetBool(IsJumpingHash, false);
-        Animator.SetBool(IsFallingHash, false);
+        Debug.Log("Enter - Walking");
+        _playerStateMachine.IsWalking = true;
+        _playerStateMachine.IsSprinting = false;
+        _playerStateMachine.IsJumping = false;
+        _playerStateMachine.IsFalling = false;
+        _playerStateMachine.IsLanding = false;
     }
 
     public override StateType UpdateState()
     {
+        if (_playerController == null || _playerStateMachine == null)
+            return StateType.None;
 
-        _xVelocity = Mathf.Lerp(_xVelocity, PlayerController.HorizontalMove, PlayerStateMachine.SmoothSpeed);
-        _yVelocity = Mathf.Lerp(_yVelocity, PlayerController.VerticalMove, PlayerStateMachine.SmoothSpeed);
+        _playerStateMachine.HorizontalSpeed = Mathf.Lerp(_playerStateMachine.HorizontalSpeed,
+                                                         _playerController.HorizontalMove,
+                                                         _playerStateMachine.SmoothSpeed * Time.deltaTime);
+        
+        _playerStateMachine.VerticalSpeed = Mathf.Lerp(_playerStateMachine.VerticalSpeed,
+                                                       _playerController.VerticalMove,
+                                                       _playerStateMachine.SmoothSpeed * Time.deltaTime);
 
-        Animator.SetFloat(XVelocityHash, _xVelocity);
-        Animator.SetFloat(YVelocityHash, _yVelocity);
-
-        if(Mathf.Abs(PlayerController.HorizontalMove) < 0.1f && Mathf.Abs(PlayerController.VerticalMove) < 0.1f)
+        if(Mathf.Abs(_playerController.HorizontalMove) < 0.1f && Mathf.Abs(_playerController.VerticalMove) < 0.1f)
         {
             return StateType.Idle;
         }
         
-        
-        if((Mathf.Abs(PlayerController.HorizontalMove) > 0.2f || Mathf.Abs(PlayerController.VerticalMove) > 0.2f)
-            && PlayerController.IsSprinting)
+        if((Mathf.Abs(_playerController.HorizontalMove) > 0.2f || Mathf.Abs(_playerController.VerticalMove) > 0.2f)
+            && _playerController.IsSprinting)
         {
             return StateType.Sprinting;
         }
+        
+        if((Mathf.Abs(_playerController.HorizontalMove) > 0.2f || Mathf.Abs(_playerController.VerticalMove) > 0.2f)
+            && _playerController.IsJumping)
+        {
+            return StateType.JumpingWithWalk;
+        }
+
 
         return StateType.Walking;
     }
 
     public override void ExitState()
     {
-        Debug.Log("EXIT - WALKING");
+        Debug.Log("Exit - Walking");
 
-        Animator.SetBool(IsWalkingHash, false);
+        if (_playerStateMachine == null)
+            return;
+
+        _playerStateMachine.IsWalking = false;
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(Animator))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Input Manager")]
@@ -13,7 +13,8 @@ public class PlayerController : MonoBehaviour
     [Header("Move Settings")]
     [SerializeField] private float _walkSpeed;
     [SerializeField] private float _runSpeed;
-    [SerializeField] private float _drag;
+    [SerializeField] private float _dragGround;
+    [SerializeField] private float _dragAir;
     [SerializeField] private float _speedMultiplaer;
     [SerializeField] [Range(0f, 5f)] private float _smoothSpeedTime;
 
@@ -64,13 +65,16 @@ public class PlayerController : MonoBehaviour
     private bool _isSprinting;
     private bool _isJumping;
     private bool _isFalling;
+    private bool _isLanding;
 
 
     public float HorizontalMove => _horizontalMove;
     public float VerticalMove => _verticalMove;
+    public bool IsGrounded => _isGrounded;
     public bool IsSprinting => _isSprinting;
     public bool IsJumping => _isJumping;
     public bool IsFalling => _isFalling;
+    public bool IsLanding => _isLanding;
 
     private void Awake()
     {
@@ -97,6 +101,7 @@ public class PlayerController : MonoBehaviour
         LookUpdate();
         ControlDrag();
         Jump();
+        CalculateFalling();
         Sprint();
         CalculateSprint();
         ProjectOnPlane();
@@ -109,6 +114,9 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
+        if (_isLanding)
+            return;
+
         _speed = _walkSpeed;
 
         if (_isSprinting)
@@ -167,7 +175,13 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyJumpForce()
     {
+        _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
         _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
+    }
+
+    public void EndLanding()
+    {
+        _isLanding = false;
     }
 
     private void CalculateSprint()
@@ -223,12 +237,34 @@ public class PlayerController : MonoBehaviour
     private void CalculateFalling()
     {
         _fallingSpeed = transform.InverseTransformDirection(_rb.velocity).y;
+
+        if(PlayerIsFalling() && !_isGrounded)
+        {
+            _isFalling = true;
+        }
+
+        if(_isFalling && _isGrounded && _fallingSpeed < -0.1f)
+        {
+            _isFalling = false;
+            _isJumping = false;
+            _isLanding = true;
+        }
     }
 
 
     private void ChechGround()
     {
-        _isGrounded = Physics.CheckSphere(transform.position - new Vector3(0f, 1f, 0f), _sphereRadius, _groundMask);
+        _isGrounded = Physics.CheckSphere(transform.position, _sphereRadius, _groundMask);
+    }
+
+    private bool PlayerIsFalling()
+    {
+        if(_fallingSpeed < _fallingThreshold)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private void ProjectOnPlane()
@@ -257,7 +293,23 @@ public class PlayerController : MonoBehaviour
   
     private void ControlDrag()
     {
-        _rb.drag = _drag;
+        if (_isGrounded)
+        {
+            _rb.drag = _dragGround;
+        }
+        else
+        {
+            _rb.drag = _dragAir;
+        }
     }
+
+    #region - Draw Gizmos -
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(transform.position, _sphereRadius);
+    }
+
+    #endregion
 
 }

@@ -146,13 +146,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 134668076}
-  m_LocalRotation: {x: 0.000000008062349, y: 1.6768809e-12, z: 1.1146564e-14, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6553335, z: -2.222}
+  m_LocalRotation: {x: -0, y: 9.445868e-14, z: -4.9487974e-14, w: 1}
+  m_LocalPosition: {x: -0, y: 0.067, z: 0.106}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 963194228}
-  m_Father: {fileID: 4763584585880795160}
-  m_RootOrder: 1
+  m_Father: {fileID: 1474704604065589915}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &245993429
 GameObject:
@@ -1094,7 +1094,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh18336
+  m_Name: pb_Mesh18342
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1438,7 +1438,7 @@ Transform:
   - {fileID: 3805090764386381747}
   - {fileID: 730442865799818015}
   m_Father: {fileID: 4763584585880795160}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1068701329558408549
 GameObject:
@@ -1543,6 +1543,7 @@ Transform:
   m_LocalPosition: {x: -0, y: 0.061167143, z: 0.02423307}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 134668077}
   - {fileID: 4408596465282018933}
   m_Father: {fileID: 2305115388633334753}
   m_RootOrder: 0
@@ -2224,7 +2225,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1474704604065589915}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4450381031355577052
 GameObject:
@@ -2319,7 +2320,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4205998110325887870}
-  - {fileID: 134668077}
   - {fileID: 1030185484782737548}
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -2430,7 +2430,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5282852507398382242}
   serializedVersion: 2
-  m_Mass: 54
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0
   m_UseGravity: 1
@@ -2469,7 +2469,8 @@ MonoBehaviour:
   _camera: {fileID: 963194228}
   _walkSpeed: 1.2
   _runSpeed: 3
-  _drag: 10
+  _dragGround: 8
+  _dragAir: 2
   _speedMultiplaer: 10
   _smoothSpeedTime: 0.5
   _xSensitivity: 2
@@ -2481,10 +2482,10 @@ MonoBehaviour:
   _staminaDrain: 15
   _staminaRestore: 15
   _staminaRestoreDelay: 5
-  _jumpForce: 15
+  _jumpForce: 5
   _fallingSpeed: 3
-  _fallingThreshold: 2
-  _sphereRadius: 0.25
+  _fallingThreshold: 5
+  _sphereRadius: 0.2
 --- !u!114 &5282852507398382246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2497,8 +2498,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f478c6391c2abf468bfa0a425dfae8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentStateType: 0
-  _smoothSpeed: 0.4
+  CurrentStateType: 0
+  _smoothSpeed: 10
 --- !u!4 &5316532567929600877
 Transform:
   m_ObjectHideFlags: 0

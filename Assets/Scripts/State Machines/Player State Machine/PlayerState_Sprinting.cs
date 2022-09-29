@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class PlayerState_Sprinting : PlayerBaseState
 {
-    private float _xVelocity;
-    private float _yVelocity;
-
     public override StateType GetStateType()
     {
         return StateType.Sprinting;
@@ -12,35 +9,34 @@ public class PlayerState_Sprinting : PlayerBaseState
 
     public override void EnterState()
     {
-        Debug.Log("ENTER - SPRINTING");
-
-        if (Animator == null)
+        if (_playerStateMachine == null)
             return;
 
-        Animator.SetBool(IsWalkingHash, false);
-        Animator.SetBool(IsSprintingHash, true);
-        Animator.SetBool(IsJumpingHash, false);
-        Animator.SetBool(IsFallingHash, false);
-
+        Debug.Log("Enter - Sprinting");
+        _playerStateMachine.IsSprinting = true;
+        _playerStateMachine.IsWalking = false;
+        _playerStateMachine.IsJumping = false;
+        _playerStateMachine.IsFalling = false;
+        _playerStateMachine.IsLanding = false;
     }
 
     public override StateType UpdateState()
     {
-        _xVelocity = Mathf.Lerp(_xVelocity, PlayerController.HorizontalMove, PlayerStateMachine.SmoothSpeed);
-        _yVelocity = Mathf.Lerp(_yVelocity, PlayerController.VerticalMove, PlayerStateMachine.SmoothSpeed);
+        if (_playerController == null || _playerStateMachine == null)
+            return StateType.None;
 
-        Animator.SetFloat(XVelocityHash, _xVelocity);
-        Animator.SetFloat(YVelocityHash, _yVelocity);
+        _playerStateMachine.HorizontalSpeed = Mathf.Lerp(_playerStateMachine.HorizontalSpeed,
+                                                         _playerController.HorizontalMove,
+                                                         _playerStateMachine.SmoothSpeed * Time.deltaTime);
+        
+        _playerStateMachine.VerticalSpeed = Mathf.Lerp(_playerStateMachine.VerticalSpeed,
+                                                         _playerController.VerticalMove,
+                                                         _playerStateMachine.SmoothSpeed * Time.deltaTime);
 
-        if ((Mathf.Abs(PlayerController.HorizontalMove) > 0.2f || Mathf.Abs(PlayerController.VerticalMove) > 0.2f)
-            && !PlayerController.IsSprinting)
+        if((Mathf.Abs(_playerController.HorizontalMove) > 0.2f || Mathf.Abs(_playerController.VerticalMove) > 0.2f)
+            && !_playerController.IsSprinting)
         {
             return StateType.Walking;
-        }
-        
-        if((Mathf.Abs(PlayerController.HorizontalMove) < 0.1f && Mathf.Abs(PlayerController.VerticalMove) < 0.1f))
-        {
-            return StateType.Idle;
         }
 
 
@@ -49,10 +45,11 @@ public class PlayerState_Sprinting : PlayerBaseState
 
     public override void ExitState()
     {
-        Debug.Log("EXIT - SPRINTING");
+        Debug.Log("Exit - Sprinting");
 
-        Animator.SetBool(IsSprintingHash, false);
+        if (_playerStateMachine == null)
+            return;
+
+        _playerStateMachine.IsSprinting = false;
     }
-
-
 }

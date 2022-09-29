@@ -1,33 +1,77 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[DefaultExecutionOrder(-1)]
-public class PlayerStateMachine : MonoBehaviour
+public class PlayerStateMachine : StateMachine
 {
-    [Header("Current State Type")]
-    [SerializeField] private StateType _currentStateType;
-
-    [Header("Smoothing Speed Animation Transition")]
+    [Header("Smooth Animation Transition")]
     [SerializeField] private float _smoothSpeed;
 
-    private PlayerBaseState _currentState;
-    private Dictionary<StateType, PlayerBaseState> _states;
+    private PlayerController _playerController;
 
-    private PlayerController _controller;
-    private Animator _animator;
+    private float _horizontalSpeed;
+    private float _verticalSpeed;
+    private bool _isWalking;
+    private bool _isSprinting;
+    private bool _isJumping;
+    private bool _isFalling;
+    private bool _isLanding;
+
+
+    private int XVelocityHash = Animator.StringToHash("X_Velocity");
+    private int YVelocityHash = Animator.StringToHash("Y_Velocity");
+    private int IsWalkingHash = Animator.StringToHash("IsWalking");
+    private int IsSprintingHash = Animator.StringToHash("IsSprinting");
+    private int IsJumpingHash = Animator.StringToHash("IsJumping");
+    private int IsFallingHash = Animator.StringToHash("IsFalling");
+    private int IsLandingHash = Animator.StringToHash("IsLanding");
 
     public float SmoothSpeed => _smoothSpeed;
-
-    public Animator Animator
+    public float HorizontalSpeed
     {
-        get => _animator;
-        set => _animator = value;
+        get => _horizontalSpeed;
+        set => _horizontalSpeed = value;
+    }
+
+    public float VerticalSpeed
+    {
+        get => _verticalSpeed;
+        set => _verticalSpeed = value;
+    }
+
+    public bool IsSprinting
+    {
+        get => _isSprinting;
+        set => _isSprinting = value;
+    }
+    public bool IsJumping
+    {
+        get => _isJumping;
+        set => _isJumping = value;
+    }
+
+    public bool IsFalling
+    {
+        get => _isFalling;
+        set => _isFalling = value;
+    }
+
+    public bool IsLanding
+    {
+        get => _isLanding;
+        set => _isLanding = value;
+    }
+    public bool IsWalking
+    {
+        get => _isWalking;
+        set => _isWalking = value;
     }
 
     private void Awake()
     {
-        SetReferences();
-        InitDicStates();
+        _playerController = GetComponent<PlayerController>();
+        _animator = GetComponent<Animator>();
+
+        InitStates();
     }
 
     private void Start()
@@ -36,82 +80,80 @@ public class PlayerStateMachine : MonoBehaviour
         {
             if(_states[key] != null)
             {
-                _states[key].SetPlayerController(_controller);
-                _states[key].SetAnimator(_animator);
+                PlayerBaseState state = _states[key] as PlayerBaseState;
+                if (state != null)
+                {
+                    state.PlayerController = _playerController;
+                }
             }
         }
 
-        _currentStateType = StateType.Idle;
+        CurrentStateType = StateType.Idle;
 
-        if (_states.ContainsKey(_currentStateType))
+        if (_states.ContainsKey(CurrentStateType))
         {
-            _currentState = _states[_currentStateType];
-            _currentState.EnterState();
+            CurrentState = _states[CurrentStateType];
+            CurrentState.EnterState();
         }
-
     }
 
-    private void Update()
+    protected override void Update()
     {
-        if (_currentState == null)
+        base.Update();
+
+        if (_animator == null)
             return;
 
-        StateType newStateType = _currentState.UpdateState();
+        _animator.SetFloat(XVelocityHash, _horizontalSpeed);
+        _animator.SetFloat(YVelocityHash, _verticalSpeed);
+        _animator.SetBool(IsSprintingHash, _isSprinting);
+        _animator.SetBool(IsWalkingHash, _isWalking);
 
-        if(_currentStateType != newStateType)
+        if (_isJumping)
         {
-            PlayerBaseState newState = null;
+            _animator.SetTrigger(IsJumpingHash);
+            _isJumping = false;
+        }
 
-            if(_states.TryGetValue(newStateType, out newState))
-            {
-                _currentState.ExitState();
-                newState.EnterState();
-                _currentState = newState;
-            }
-            else if(_states.TryGetValue(StateType.Idle, out newState))
-            {
-                _currentState.ExitState();
-                newState.EnterState();
-            }
+        if (_isFalling)
+        {
+            _animator.SetTrigger(IsFallingHash);
+            _isFalling = false;
+        }
 
-            _currentStateType = newStateType;
+        if (_isLanding)
+        {
+            _animator.SetTrigger(IsLandingHash);
+            _isLanding = false;
         }
     }
 
-    private void InitDicStates()
+    protected override void InitStates()
     {
-        _states = new Dictionary<StateType, PlayerBaseState>();
+        _states = new Dictionary<StateType, State>();
 
         PlayerState_Idle idle = new PlayerState_Idle();
         PlayerState_Walking walking = new PlayerState_Walking();
         PlayerState_Sprinting sprinting = new PlayerState_Sprinting();
         PlayerState_JumpingUp jumpingUp = new PlayerState_JumpingUp();
+        PlayerState_Falling falling = new PlayerState_Falling();
+        PlayerState_Landing landing = new PlayerState_Landing();
+        PlayerState_JumpWithWalk jumpWithWalk = new PlayerState_JumpWithWalk();
 
         idle.SetStateMachine(this);
         walking.SetStateMachine(this);
         sprinting.SetStateMachine(this);
         jumpingUp.SetStateMachine(this);
+        falling.SetStateMachine(this);
+        landing.SetStateMachine(this);
+        jumpWithWalk.SetStateMachine(this);
 
         _states[StateType.Idle] = idle;
         _states[StateType.Walking] = walking;
         _states[StateType.Sprinting] = sprinting;
         _states[StateType.JumpingUp] = jumpingUp;
+        _states[StateType.Falling] = falling;
+        _states[StateType.Landing] = landing;
+        _states[StateType.JumpingWithWalk] = jumpWithWalk;
     }
-
-    private void SetReferences() 
-    {
-        _controller = GetComponent<PlayerController>();
-        _animator = GetComponent<Animator>();
-    }
-}
-
-public enum StateType
-{
-    Idle,
-    Walking,
-    Sprinting,
-    JumpingUp,
-    Falling,
-    Crouching,
-
 }
