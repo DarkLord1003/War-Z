@@ -37,6 +37,12 @@ public class PlayerState_Idle : PlayerBaseState
             return StateType.Sprinting;
         }
 
+        if((Mathf.Abs(_playerController.HorizontalMove) < 0.2f && Mathf.Abs(_playerController.VerticalMove) < 0.2f)
+            && _playerController.IsEquippedWeapon)
+        {
+            return StateType.IdleWithRifle;
+        }
+
         if (_playerController.IsJumping)
         {
             return StateType.JumpingUp;

@@ -6,6 +6,12 @@ public class PlayerStateMachine : StateMachine
     [Header("Smooth Animation Transition")]
     [SerializeField] private float _smoothSpeed;
 
+    [Header("States With Rifle")]
+    [SerializeField] private PlayerState_IdleWithRifle _idleWithRifle = new PlayerState_IdleWithRifle();
+    [SerializeField] private PlayerState_WalkWithRifle _walkWithRifle = new PlayerState_WalkWithRifle();
+    [SerializeField] private PlayerState_SprintWithRifle _sprintWithRifle = new PlayerState_SprintWithRifle();
+
+
     private PlayerController _playerController;
 
     private float _horizontalSpeed;
@@ -15,16 +21,20 @@ public class PlayerStateMachine : StateMachine
     private bool _isJumping;
     private bool _isFalling;
     private bool _isLanding;
+    private bool _isEquippedWeapon;
 
 
-    private int XVelocityHash = Animator.StringToHash("X_Velocity");
-    private int YVelocityHash = Animator.StringToHash("Y_Velocity");
-    private int IsWalkingHash = Animator.StringToHash("IsWalking");
-    private int IsSprintingHash = Animator.StringToHash("IsSprinting");
-    private int IsJumpingHash = Animator.StringToHash("IsJumping");
-    private int IsFallingHash = Animator.StringToHash("IsFalling");
-    private int IsLandingHash = Animator.StringToHash("IsLanding");
+    private int _xVelocityHash = Animator.StringToHash("X_Velocity");
+    private int _yVelocityHash = Animator.StringToHash("Y_Velocity");
+    private int _isWalkingHash = Animator.StringToHash("IsWalking");
+    private int _isSprintingHash = Animator.StringToHash("IsSprinting");
+    private int _isJumpingHash = Animator.StringToHash("IsJumping");
+    private int _isFallingHash = Animator.StringToHash("IsFalling");
+    private int _isLandingHash = Animator.StringToHash("IsLanding");
+    private int _isEquippedWeaponHash = Animator.StringToHash("IsEquippedWeapon");
 
+
+    public PlayerState_IdleWithRifle IdleWithRifle => _idleWithRifle;
     public float SmoothSpeed => _smoothSpeed;
     public float HorizontalSpeed
     {
@@ -66,6 +76,7 @@ public class PlayerStateMachine : StateMachine
         set => _isWalking = value;
     }
 
+
     private void Awake()
     {
         _playerController = GetComponent<PlayerController>();
@@ -104,26 +115,26 @@ public class PlayerStateMachine : StateMachine
         if (_animator == null)
             return;
 
-        _animator.SetFloat(XVelocityHash, _horizontalSpeed);
-        _animator.SetFloat(YVelocityHash, _verticalSpeed);
-        _animator.SetBool(IsSprintingHash, _isSprinting);
-        _animator.SetBool(IsWalkingHash, _isWalking);
+        _animator.SetFloat(_xVelocityHash, _horizontalSpeed);
+        _animator.SetFloat(_yVelocityHash, _verticalSpeed);
+        _animator.SetBool(_isSprintingHash, _isSprinting);
+        _animator.SetBool(_isWalkingHash, _isWalking);
 
         if (_isJumping)
         {
-            _animator.SetTrigger(IsJumpingHash);
+            _animator.SetTrigger(_isJumpingHash);
             _isJumping = false;
         }
 
         if (_isFalling)
         {
-            _animator.SetTrigger(IsFallingHash);
+            _animator.SetTrigger(_isFallingHash);
             _isFalling = false;
         }
 
         if (_isLanding)
         {
-            _animator.SetTrigger(IsLandingHash);
+            _animator.SetTrigger(_isLandingHash);
             _isLanding = false;
         }
     }
@@ -139,6 +150,7 @@ public class PlayerStateMachine : StateMachine
         PlayerState_Falling falling = new PlayerState_Falling();
         PlayerState_Landing landing = new PlayerState_Landing();
         PlayerState_JumpWithWalk jumpWithWalk = new PlayerState_JumpWithWalk();
+        PlayerState_JumpingWithSprint jumpingWithSprint = new PlayerState_JumpingWithSprint();
 
         idle.SetStateMachine(this);
         walking.SetStateMachine(this);
@@ -147,6 +159,11 @@ public class PlayerStateMachine : StateMachine
         falling.SetStateMachine(this);
         landing.SetStateMachine(this);
         jumpWithWalk.SetStateMachine(this);
+        jumpingWithSprint.SetStateMachine(this);
+        _idleWithRifle.SetStateMachine(this);
+        _walkWithRifle.SetStateMachine(this);
+        _sprintWithRifle.SetStateMachine(this);
+
 
         _states[StateType.Idle] = idle;
         _states[StateType.Walking] = walking;
@@ -155,5 +172,9 @@ public class PlayerStateMachine : StateMachine
         _states[StateType.Falling] = falling;
         _states[StateType.Landing] = landing;
         _states[StateType.JumpingWithWalk] = jumpWithWalk;
+        _states[StateType.JumpingWithSprint] = jumpingWithSprint;
+        _states[StateType.IdleWithRifle] = _idleWithRifle;
+        _states[StateType.WalkWithRifle] = _walkWithRifle;
+        _states[StateType.SprintWithRifle] = _sprintWithRifle;
     }
 }

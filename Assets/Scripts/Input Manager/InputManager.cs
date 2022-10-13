@@ -11,11 +11,13 @@ public class InputManager : MonoBehaviour
 
     private bool _sprint;
     private bool _jump;
+    private bool _aiming;
 
     public Vector2 MoveInput => _moveInput;
     public Vector2 ViewInput => _viewInput;
     public bool Sprint => _sprint;
     public bool Jump => _jump;
+    public bool Aiming => _aiming;
 
     private void Awake()
     {
@@ -30,6 +32,9 @@ public class InputManager : MonoBehaviour
         _characterActions.Player.Movement.canceled += OnMove;
         _characterActions.Player.Sprint.canceled += OnSprint;
         _characterActions.Player.Jump.canceled += OnJump;
+
+        _characterActions.Player.Aim.performed += OnAim;
+        _characterActions.Player.Aim.canceled += OnAim;
     }
 
     private void OnMove(InputAction.CallbackContext context)
@@ -50,6 +55,11 @@ public class InputManager : MonoBehaviour
     private void OnJump(InputAction.CallbackContext context)
     {
         _jump = context.ReadValueAsButton();
+    }
+
+    private void OnAim(InputAction.CallbackContext context)
+    {
+        _aiming = context.ReadValueAsButton();
     }
 
 

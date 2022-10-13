@@ -8,6 +8,7 @@ public abstract class State
 
     public virtual void EnterState() { }
     public virtual void ExitState() { }
+    public virtual void AnimatorIKUpdate() { }
 
     public abstract StateType GetStateType();
     public abstract StateType UpdateState();

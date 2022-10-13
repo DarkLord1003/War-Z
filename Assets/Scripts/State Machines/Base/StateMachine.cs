@@ -58,7 +58,11 @@ public enum StateType
     Crouching,
     Landing,
     None,
-    JumpingWithWalk
+    JumpingWithWalk,
+    IdleWithRifle,
+    WalkWithRifle,
+    SprintWithRifle,
+    JumpingWithSprint
 
 }
 

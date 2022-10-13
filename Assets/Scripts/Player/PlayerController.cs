@@ -66,6 +66,7 @@ public class PlayerController : MonoBehaviour
     private bool _isJumping;
     private bool _isFalling;
     private bool _isLanding;
+    public bool _isEquippedWeapon;
 
 
     public float HorizontalMove => _horizontalMove;
@@ -75,6 +76,7 @@ public class PlayerController : MonoBehaviour
     public bool IsJumping => _isJumping;
     public bool IsFalling => _isFalling;
     public bool IsLanding => _isLanding;
+    public bool IsEquippedWeapon => _isEquippedWeapon;
 
     private void Awake()
     {
